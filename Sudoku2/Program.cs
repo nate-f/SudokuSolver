@@ -10,21 +10,47 @@ namespace Sudoku2
     {
         static void Main(string[] args)
         {
-            var m = new Matrix("52...6.........7.13...........4..8..6......5...........418.........3..2...87.....");
+            var m = new Matrix(".94167358315489627678253491456312879983574216721698534562941783839726145147835962");
+            m.Search(0);
+            var list = new List<Fill>();
+            foreach (var t in m.O) 
+            {
+                if (t == null) continue;
+                var n = t;
+                do
+                {
+                    n = n.down;
+                    if (!list.Contains(n.fill) && n.fill != null) list.Add(n.fill);
+                } while (!n.header);
+            }
+         //h   foreach (var f in m.set) list.Add(f);
+            foreach(var f in list) Console.WriteLine((f.number + 1) + " at (" + f.row + "," + f.col + ")");
         }
 
         private class Matrix
         {
-            public List<Column> cols = new List<Column>();
-            public List<Row> rows = new List<Row>();
-
-            public List<Node> solution = new List<Node>();
-            public Row[] removed = new Row[324];
+            public Node head;
+            public List<Node> columns = new List<Node>();
+            public Node[] O = new Node[324];
+            public int filled = 0;
+            public List<Fill> fills = new List<Fill>();
+            public List<Fill> set = new List<Fill>();
             public Matrix(string s)
             {
                 for(int i = 0; i < 324; i++)
                 {
-                    cols.Add(new Column());
+                    columns.Add(new Node() {
+                        header = true
+                    });
+                }
+                for(int i = 0; i < columns.Count; i++)
+                {
+                    var c = columns[i];
+                    c.up = c;
+                    c.down = c;
+                    c.col = c;
+                    c.right = columns[i == columns.Count - 1 ? 0 : i + 1];
+                    c.left  = columns[i == 0 ? columns.Count - 1 : i - 1];
                 }
                 for(int i = 0; i < 9; i++) //the row
                 {
@@ -33,29 +59,33 @@ namespace Sudoku2
                         for(int k = 0; k < 9; k++) //the number being placed
                         {
                             Node n1 = new Node();
-                            n1.up = cols[j * 9 + i];
-                            n1.col = cols[j * 9 + i];
+                            n1.up = columns[j * 9 + i];
+                            n1.col = columns[j * 9 + i];
+                            n1.col.size++;
                             n1.down = n1.up.down;
                             n1.down.up = n1;
                             n1.up.down = n1;
 
                             Node n2 = new Node();
-                            n2.up = cols[j * 9 + i + 81];
-                            n2.col = cols[j * 9 + i + 81];
+                            n2.up = columns[j * 9 + i + 81];
+                            n2.col = columns[j * 9 + i + 81];
+                            n2.col.size++;
                             n2.down = n2.up.down;
                             n2.down.up = n2;
                             n2.up.down = n2;
 
                             Node n3 = new Node();
-                            n3.up = cols[j * 9 + i + 162];
-                            n3.col = cols[j * 9 + i + 162];
+                            n3.up = columns[j * 9 + i + 162];
+                            n3.col = columns[j * 9 + i + 162];
+                            n3.col.size++;
                             n3.down = n3.up.down;
                             n3.down.up = n3;
                             n3.up.down = n3;
 
                             Node n4 = new Node();
-                            n4.up = cols[j * 9 + i + 243];
-                            n4.col = cols[j * 9 + i + 243];
+                            n4.up = columns[j * 9 + i + 243];
+                            n4.col = columns[j * 9 + i + 243];
+                            n4.col.size++;
                             n4.down = n4.up.down;
                             n4.down.up = n4;
                             n4.up.down = n4;
@@ -69,73 +99,159 @@ namespace Sudoku2
                             n3.left = n2;
                             n2.left = n1;
                             n1.left = n4;
-
-                            var fill = new Fill(i, j, Fill.GetBox(i, j), k);
+                            Fill fill = new Fill()
+                            {
+                                number = k,
+                                row = i,
+                                col = j,
+                                box = boxes[i, j],
+                                firstNode = n1
+                            };
+                            fills.Add(fill);
                             n1.fill = fill;
                             n2.fill = fill;
                             n3.fill = fill;
                             n4.fill = fill;
-
-                            var r = new Row();
-                            r.nodes = new List<Node>() { n1, n2, n3, n4 };
-                            r.fill = fill;
-                            rows.Add(r);
                         }
                     }
                 }
-                for(int j = 0; j < 9; j++)
+                head = columns[0];
+                for (int j = 0; j < 9; j++)
                 {
                     for(int i = 0; i < 9; i++)
                     {
                         if (s[i + j * 9] == '.') continue;
-                        int num = int.Parse(s.Substring(i + j * 9, 1));
-                        var f = new Fill(i, j, Fill.GetBox(i, j), num);
-                        var r = rows.Single(q => q.fill == f);
-                        cols.RemoveAll(q => r.nodes.Any(w => w.col == q));
-                        solution.Add(r);
+                        int num = int.Parse(s.Substring(i + j * 9, 1)) - 1;
+                        var fill = fills.Single(q =>
+                            q.row == j &&
+                            q.col == i &&
+                            q.number == num
+                        );
+                        var t = fill.firstNode;
+                        set.Add(fill);
+                        do
+                        {
+                            var t2 = t;
+                            do
+                            {
+                                Cover(t2.col);
+                                t2 = t2.right;
+                            } while (t2 != t);
+                            t = t.right;
+                        } while (t != fill.firstNode);
                     }
                 }
             }
-            public void Solve(int l = 0)
+            public void Search(int k = 0)
             {
-                var c = cols.FirstOrDefault(q => !solution.Any(w => w.nodes.Any(e => e.col == q)));
-                if (c == null)
+                // if R[h] = h, return
+                if (head.right == head)
+                    return;
+
+                //otherwise, choose a column c
+                //in this case using the S metric
+                var c = head.right;
+                int lowestNum = c.size;
+                var lowestNode = c;
+                while(c != head)
                 {
-                    //done
-                }
-                var r = rows.FirstOrDefault(q => q.nodes.Any(w => w.col == c));
-                if (r == null)
-                {
-                    //backtrack
-                }
-                else
-                {
-                    removed[l] = 
-                    foreach(var box in c.nodes)
+                    if (c.size < lowestNum)
                     {
-                        box.right.left = box.left;
-                        box.left.right = box.right;
+                        lowestNum = c.size;
+                        lowestNode = c;
                     }
-                    c.right.left = c.left;
-                    c.left.right = c.right;
+                    c = c.right;
                 }
-                return null;
+                c = lowestNode;
+
+                //Cover column C
+                Cover(c);
+
+                //for each r <- D[c], D[D[c]],... while r != c
+                var r = c.down;
+                while (r != c) 
+                {
+                    //set O(sub k) = r
+                    O[k] = r;
+
+                    //for each j <- R[r], R[R[r]], ... while j != r
+                    var j = r.right;
+                    while(j != r)
+                    {
+                        Cover(j.col);
+                        j = j.right;
+                    }
+                    
+                    //recurse, k + 1
+                    Search(k + 1);
+
+                    //set r <- O (sub k) and c <- C[r]
+                    r = O[k];
+                    c = r.col;
+
+                    //for each j <- L[r], L[L[r]], ... while j != r
+                   // j = c.up;
+                    var start = j.left;
+                    while(j != start)
+                    {
+                        //uncover column j
+                        Uncover(j);
+                        j = j.left;
+                    }
+                    r = r.down;
+                } 
+                //uncover column C
+                Uncover(c);
             }
-        }
-        private class Column : Node
-        {
-            public IEnumerable<Node> nodes
+
+            private void Uncover(Node c)
             {
-                get
+                c.right.left = c;
+                c.left.right = c;
+                columns.Add(c);
+
+                var start = c.col;
+                var i = start.up;
+                while (i != start) 
                 {
-                    var cur = down;
-                    yield return cur;
-                    var self = this;
-                    while(cur != self)
+                    var j = i.left;
+                    while (j != i) 
                     {
-                        yield return cur;
-                        cur = cur.down;
+                        c.col.size++;
+                        j.down.up = j;
+                        j.up.down = j;
+                        j = j.left;
+                    } 
+                    i = i.up;
+                } 
+                if(c.right == head)
+                {
+                    head = c;
+                }
+            }
+
+            private void Cover(Node c)
+            {
+                c.right.left = c.left;
+                c.left.right = c.right;
+                columns.Remove(c);
+
+                var i = c.col.down;
+                while(i != c.col)
+                {
+                    var j = i.right;
+                    while(j != i)
+                    {
+                        j.up.down = j.down;
+                        j.down.up = j.up;
+                        j.col.size--;
+                        j = j.right;
                     }
+                    i = i.down;
+                }
+                if(c == head)
+                {
+                    head = c.right;
                 }
             }
         }
@@ -145,59 +261,30 @@ namespace Sudoku2
             public Node down;
             public Node right;
             public Node left;
-            public Column col;
+            public Node col;
+            public int size;
+            public bool header = false;
             public Fill fill;
+            public int count;
+            public static int countAll;
             public Node()
             {
                 up = this;
                 down = this;
                 right = this;
                 left = this;
+                count = ++countAll;
             }
         }
         private class Fill
         {
-            public int x;
-            public int y;
-            public int z;
-            public int num;
-            public Fill(int x, int y, int z, int num)
-            {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-                this.num = num;
-            }
-            public static int GetBox(int x, int y)
-            {
-                return boxes[x, y];
-            }
-            public override bool Equals(object other)
-            {
-                var f = other as Fill;
-                if (f == null) return false;
-                if (x != f.x || y != f.y || z != f.z || num != f.num) return false;
-                return true;
-            }
-            public static bool operator ==(Fill f1, Fill f2)
-            {
-                if (ReferenceEquals(f1, f2)) return true;
-                return f1.Equals(f2);
-            }
-            public static bool operator !=(Fill f1, Fill f2)
-            {
-                return !f1.Equals(f2);
-            }
+            public int row;
+            public int col;
+            public int box;
+            public int number;
+            public Node firstNode;
         }
-        private class Row
-        {
-            public Fill fill;
-            public List<Node> nodes;
-            public Row()
-            {
-                    
-            }
-        }
+       
         private static int[,] boxes = new int[9, 9] {
     { 0,  0, 0, 1,1,1, 2,2,2},
     { 0 , 0, 0, 1,1,1, 2,2,2,},
