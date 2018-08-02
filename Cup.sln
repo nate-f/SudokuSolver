@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.25914.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum", "Cup\Museum.csproj", "{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}"
 EndProject
@@ -15,14 +15,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Release|Any CPU.ActiveCfg = Debug|x86
+		{0D112718-A2C9-46F4-BF3C-05EAAE84B4ED}.Release|Any CPU.Build.0 = Debug|x86
+		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Release|Any CPU.ActiveCfg = Debug|x86
+		{DCE266A2-4D43-4C42-8989-8EDA7CC71732}.Release|Any CPU.Build.0 = Debug|x86
 		{13C18747-EA70-4D76-933F-E0F57416776C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13C18747-EA70-4D76-933F-E0F57416776C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13C18747-EA70-4D76-933F-E0F57416776C}.Release|Any CPU.ActiveCfg = Release|Any CPU

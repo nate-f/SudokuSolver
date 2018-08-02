@@ -178,7 +178,8 @@ namespace Sudoku2
                     var j = r.right;
                     while(j != r)
                     {
-                        Cover(j.col);
+                        j.right.left = j.left;
+                        j.left.right = j.right;
                         j = j.right;
                     }
                     
